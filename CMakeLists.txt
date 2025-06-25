@@ -65,6 +65,9 @@ set(SOURCES
     channels/remdesk/common/remdesk_common.c
     channels/remdesk/client/remdesk_main.c
     errors/error.c
+    components/xf_monitor.c
+    components/xf_utils.c
+    components/xf_window.c
 )
 
 # Create executable with all source files
