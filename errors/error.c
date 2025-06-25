@@ -32,7 +32,7 @@ static const struct exit_code_map_t exit_code_map[] = {
 	{ FREERDP_ERROR_CONNECT_NO_OR_MISSING_CREDENTIALS, XF_EXIT_CONNECT_NO_OR_MISSING_CREDENTIALS }
 };
 
-static int map_error_to_exit_code(DWORD error)
+int map_error_to_exit_code(DWORD error)
 {
 	for (size_t x = 0; x < ARRAYSIZE(exit_code_map); x++)
 	{

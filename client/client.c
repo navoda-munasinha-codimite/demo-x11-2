@@ -11,6 +11,9 @@
 
 
 static BOOL client_global_init(void){
+
+    printf("client_global_init called\n");
+
 	// NOLINTNEXTLINE(concurrency-mt-unsafe)
 	(void)setlocale(LC_ALL, "");
 
@@ -25,6 +28,9 @@ static void client_global_uninit(void){
 }
 
 static BOOL client_new(freerdp* instance, rdpContext* context){
+
+    printf("client_new called\n");
+
     clientContext* clicon = (clientContext*)instance->context;
 	WINPR_ASSERT(context);
 	WINPR_ASSERT(clicon);
@@ -39,6 +45,9 @@ static BOOL client_new(freerdp* instance, rdpContext* context){
 }
 
 static void client_free(WINPR_ATTR_UNUSED freerdp* instance, rdpContext* context){
+
+    printf("client_free called\n");
+
     if (!context)
 		return;
 
@@ -53,10 +62,16 @@ static void client_free(WINPR_ATTR_UNUSED freerdp* instance, rdpContext* context
 }
 
 static BOOL handle_window_events(freerdp* instance){
+
+    printf("handle_window_events called\n");
+
     return TRUE;
 }
 
 static DWORD WINAPI client_thread(LPVOID param){
+    
+    printf("client_thread called\n");
+
     DWORD exit_code = 0;
 	DWORD waitStatus = 0;
 	HANDLE inputEvent = NULL;
@@ -75,6 +90,7 @@ static DWORD WINAPI client_thread(LPVOID param){
 
 	if (!status)
 	{
+        WLog_ERR(TAG, "freerdp_connect failed");
 		UINT32 error = freerdp_get_last_error(instance->context);
 		exit_code = (uint32_t)map_error_to_exit_code(error);
 	}
@@ -108,6 +124,7 @@ static DWORD WINAPI client_thread(LPVOID param){
 
 	while (!freerdp_shall_disconnect_context(instance->context))
 	{
+        printf("loop started\n");
 		HANDLE handles[MAXIMUM_WAIT_OBJECTS] = { 0 };
 		DWORD nCount = 0;
 		handles[nCount++] = inputEvent;
@@ -140,6 +157,7 @@ static DWORD WINAPI client_thread(LPVOID param){
 		// 	xf_floatbar_hide_and_show(clicon->window->floatbar);
 
 		waitStatus = WaitForMultipleObjects(nCount, handles, FALSE, INFINITE);
+        printf("wait returned. waitStatus: %d\n", waitStatus);
 
 		if (waitStatus == WAIT_FAILED)
 			break;
@@ -188,7 +206,7 @@ static DWORD WINAPI client_thread(LPVOID param){
 
 disconnect:
 	freerdp_disconnect(instance);
-    
+
 end:
 	ExitThread(exit_code);
 	return exit_code;
@@ -196,6 +214,9 @@ end:
 }   
 
 static int client_start(rdpContext* context){
+
+    printf("client_start called\n");
+
     clientContext* clicon = (clientContext*)context;
 	rdpSettings* settings = context->settings;
 
