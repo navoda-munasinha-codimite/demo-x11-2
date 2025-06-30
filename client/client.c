@@ -120,14 +120,16 @@ static DWORD WINAPI client_thread(LPVOID param){
 		goto disconnect;
 	}
 
-	inputEvent = clicon->x11event;
+	// inputEvent = clicon->x11event;
+
+	int loopCount = 0;
 
 	while (!freerdp_shall_disconnect_context(instance->context))
 	{
-        printf("loop started\n");
+        printf("[ %d ]loop started.\n", loopCount++);
 		HANDLE handles[MAXIMUM_WAIT_OBJECTS] = { 0 };
 		DWORD nCount = 0;
-		handles[nCount++] = inputEvent;
+		// handles[nCount++] = inputEvent;
 
 		/*
 		 * win8 and server 2k12 seem to have some timing issue/race condition
@@ -163,8 +165,10 @@ static DWORD WINAPI client_thread(LPVOID param){
 			break;
 
 		{
+			// freerdp_check_event_handles(context);
 			if (!freerdp_check_event_handles(context))
 			{
+				printf("freerdp_check_event_handles failed\n");
 				if (client_auto_reconnect_ex(instance, handle_window_events))
 					continue;
 				else

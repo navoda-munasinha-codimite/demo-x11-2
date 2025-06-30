@@ -14,7 +14,7 @@ void terminateEventHandler(void* context, const TerminateEventArgs* e){
 BOOL setup_x11(clientContext* clicon){
     printf("setup_x11 called\n");
 
-    clicon->x11event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, clicon->xfds, WINPR_FD_READ);
+    
 
     return TRUE;
 }
@@ -85,12 +85,12 @@ BOOL pre_connect(freerdp* instance){
 
     if (!freerdp_settings_get_bool(settings, FreeRDP_AuthenticationOnly))
 	{
-		const char* KeyboardRemappingList = freerdp_settings_get_string(
-		    clicon->common.context.settings, FreeRDP_KeyboardRemappingList);
+		// const char* KeyboardRemappingList = freerdp_settings_get_string(
+		//     clicon->common.context.settings, FreeRDP_KeyboardRemappingList);
 
-		clicon->remap_table = freerdp_keyboard_remap_string_to_list(KeyboardRemappingList);
-		if (!clicon->remap_table)
-			return FALSE;
+		// clicon->remap_table = freerdp_keyboard_remap_string_to_list(KeyboardRemappingList);
+		// if (!clicon->remap_table)
+		// 	return FALSE;
 		// if (!xf_keyboard_init(clicon))
 		// 	return FALSE;
 		// if (!xf_keyboard_action_script_init(clicon))
@@ -111,6 +111,8 @@ BOOL pre_connect(freerdp* instance){
 			return FALSE;
 	}
 
+	printf("end of pre_connect\n");
+
     // xfc->fullscreen = freerdp_settings_get_bool(settings, FreeRDP_Fullscreen);
 	// xfc->decorations = freerdp_settings_get_bool(settings, FreeRDP_Decorations);
 	// xfc->grab_keyboard = freerdp_settings_get_bool(settings, FreeRDP_GrabKeyboard);
@@ -121,13 +123,91 @@ BOOL pre_connect(freerdp* instance){
     return TRUE;
 }
 
+static BOOL begin_paint(rdpContext* context)
+{
+    printf("Begin paint called\n");
+    return TRUE;
+}
+
+static BOOL end_paint(rdpContext* context)
+{
+    printf("End paint called\n");
+    return TRUE;
+}
+
+static BOOL desktop_resize(rdpContext* context)
+{
+    printf("Desktop resize called\n");
+    return TRUE;
+}
+
+static BOOL play_sound(rdpContext* context, const PLAY_SOUND_UPDATE* play_sound){
+	printf("Play sound called \n");
+	return TRUE;
+}
+
+static BOOL keyboard_set_indicators(rdpContext* context, UINT16 led_flags){
+	printf("Set keyboard indicators called.\n");
+	return TRUE;
+}
+
+BOOL keyboard_set_ime_status(rdpContext* context, UINT16 imeId, UINT32 imeState, UINT32 imeConvMode){
+	printf("Set keyboard IME status called.");
+	return TRUE;
+}
+
 BOOL post_connect(freerdp* instance){
     printf("post_connect called\n");
+    
+    if (!instance) {
+        printf("Error: instance is NULL\n");
+        return FALSE;
+    }
+    
+    rdpContext* context = instance->context;
+    if (!context) {
+        printf("Error: context is NULL\n");
+        return FALSE;
+    }
+
+    if (!gdi_init(instance, PIXEL_FORMAT_XRGB32)) return FALSE;
+    
+    clientContext* clicon = (clientContext*)context;
+    rdpSettings* settings = context->settings;
+    
+    if (!settings) {
+        printf("Error: settings is NULL\n");
+        return FALSE;
+    }
+    
+    rdpUpdate* update = context->update;
+    if (!update) {
+        printf("Error: context->update is NULL\n");
+        return FALSE;
+    }
+
+    if (!freerdp_settings_set_bool(context->settings, FreeRDP_DeactivateClientDecoding, TRUE))
+		return FALSE;
+
+    
+    printf("All pointers valid, setting callbacks\n");
+    
+    // Now safely assign the callbacks
+    update->DesktopResize = desktop_resize;
+    update->EndPaint = end_paint;
+    update->BeginPaint = begin_paint;
+    update->PlaySound = play_sound;
+    update->SetKeyboardIndicators = keyboard_set_indicators;
+    update->SetKeyboardImeStatus = keyboard_set_ime_status;
+    
+    printf("post_connect completed successfully\n");
     return TRUE;
 }
 
 void post_disconnect(freerdp* instance){
     printf("post_disconnect called\n");
+	
+	
 }
 
 void post_final_disconnect(freerdp* instance)
